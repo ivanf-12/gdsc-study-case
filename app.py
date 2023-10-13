@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from transformers import pipeline
 
@@ -7,10 +8,13 @@ classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go
 
 app = FastAPI()
 
-class ItemSentiment(BaseModel): 
-    Sentence: str #"I am so happy today"
+@app.get("/", include_in_schema=False)
+def index():
+    return RedirectResponse("/docs", status_code=308)
 
-@app.post('/')
-async def scoring_endpoint(item:ItemSentiment):
-    sentiment_result = classifier(item.Sentence)
-    return sentiment_result 
+@app.get("/sentiment-analysis/{text}")
+def sentiment_analysis(text: str):
+    sentiment_result = classifier(text)
+    return {
+        "result": sentiment_result,
+    }
