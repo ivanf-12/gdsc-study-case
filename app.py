@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
 from transformers import pipeline
 
-# text classifier from hugging face
-classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
-
 app = FastAPI()
+
+model_path = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
 
 @app.get("/", include_in_schema=False)
 def index():
@@ -14,7 +12,8 @@ def index():
 
 @app.get("/sentiment-analysis/{text}")
 def sentiment_analysis(text: str):
-    sentiment_result = classifier(text)
+    sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path)
+    sentiment_task("Covid cases are increasing fast!")
     return {
-        "result": sentiment_result,
+        "result": sentiment_task,
     }
